@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Panel Farmacéutico{% endblock %}
+{% block content %}
+{% from 'macros/card.html' import stat_card %}
+<div class="row">
+    {{ stat_card('Ventas hoy', ventas_hoy, 'bi bi-cart', 'success') }}
+    {{ stat_card('Medicamentos totales', total_meds, 'bi bi-capsule', 'info') }}
+    {{ stat_card('Stock bajo', stock_bajo, 'bi bi-exclamation-triangle', 'warning') }}
+    <div class="col-md-3 mb-3">
+        <div class="card h-100"><div class="card-body text-center"><a href="{{ url_for('farmaceutico.nueva_venta') }}" class="btn btn-primary w-100"><i class="bi bi-plus-circle"></i> Nueva venta</a></div></div>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-12"><div class="card"><div class="card-header">Últimas ventas</div><div class="card-body">...</div></div></div>
+</div>
+{% endblock %}

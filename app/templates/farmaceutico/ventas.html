@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Ventas - Farmacéutico{% endblock %}
+{% block content %}
+<h3>Ventas registradas</h3>
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID Venta</th>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Empleado</th>
+                <th>Sucursal</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for venta in ventas %}
+            <tr>
+                <td>{{ venta.id_venta }}</td>
+                <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') if venta.fecha else venta.fecha }}</td>
+                <td>{{ venta.cliente_nombre if venta.cliente_nombre else 'N/A' }}</td>
+                <td>{{ venta.empleado_nombre if venta.empleado_nombre else 'N/A' }}</td>
+                <td>{{ venta.id_sucursal }}</td>
+                <td>${{ "%.2f"|format(venta.total) }}</td>
+                <td>
+                    <a href="{{ url_for('farmaceutico.detalle_venta', id=venta.id_venta) }}" class="btn btn-sm btn-info">Ver detalle</a>
+                </td>
+            </tr>
+            {% else %}
+                <tr><td colspan="7">No hay ventas registradas aún.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

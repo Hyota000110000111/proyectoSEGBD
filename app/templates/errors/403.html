@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Acceso denegado{% endblock %}
+{% block content %}
+<div class="container text-center mt-5">
+    <h1>403</h1>
+    <p>No tienes permiso para acceder a esta página.</p>
+    <a href="{{ url_for('home') }}" class="btn btn-primary">Volver al inicio</a>
+</div>
+{% endblock %}

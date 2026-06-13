@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Actualizar stock - {{ medicamento.nombre }}{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">Actualizar stock de: {{ medicamento.nombre }}</div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">Stock actual</label>
+                <input type="number" class="form-control" value="{{ medicamento.stock }}" disabled>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Nuevo stock</label>
+                <input type="number" name="stock" class="form-control" required min="0">
+            </div>
+            <button type="submit" class="btn btn-primary">Actualizar stock</button>
+            <a href="{{ url_for('farmaceutico.listar_medicamentos') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

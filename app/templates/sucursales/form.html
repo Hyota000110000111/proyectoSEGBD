@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">{{ titulo }}</div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" name="nombre" id="nombre" class="form-control" value="{{ sucursal.nombre if sucursal else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="ciudad" class="form-label">Ciudad</label>
+                <input type="text" name="ciudad" id="ciudad" class="form-control" value="{{ sucursal.ciudad if sucursal else '' }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="direccion" class="form-label">Dirección</label>
+                <input type="text" name="direccion" id="direccion" class="form-control" value="{{ sucursal.direccion if sucursal else '' }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('admin.listar_sucursales') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

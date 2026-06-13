@@ -1,0 +1,30 @@
+{% macro render_table(items, headers, actions=false, edit_url=None, delete_url=None, view_url=None) %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                {% for header in headers %}
+                <th>{{ header }}</th>
+                {% endfor %}
+                {% if actions %}<th>Acciones</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                {% for field in item.fields %}
+                <td>{{ field }}</td>
+                {% endfor %}
+                {% if actions %}
+                <td>
+                    {% if view_url %}<a href="{{ url_for(view_url, id=item.id) }}" class="btn btn-sm btn-info" title="Ver"><i class="bi bi-eye"></i></a>{% endif %}
+                    {% if edit_url %}<a href="{{ url_for(edit_url, id=item.id) }}" class="btn btn-sm btn-warning" title="Editar"><i class="bi bi-pencil"></i></a>{% endif %}
+                    {% if delete_url %}<button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ item.id }}" data-name="{{ item.nombre }}" data-url="{{ url_for(delete_url, id=item.id) }}"><i class="bi bi-trash"></i></button>{% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endmacro %}

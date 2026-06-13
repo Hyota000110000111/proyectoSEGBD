@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Ventas{% endblock %}
+{% block content %}
+<h3>Lista de Ventas</h3>
+<table class="table table-striped">
+    <thead>
+        <tr><th>ID</th><th>Fecha</th><th>Cliente</th><th>Total</th><th>Sucursal</th></tr>
+    </thead>
+    <tbody>
+        {% for venta in ventas %}
+        <tr>
+            <td>{{ venta.id_venta }}</td>
+            <td>{{ venta.fecha }}</td>
+            <td>{{ venta.cliente_nombre }}</td>
+            <td>${{ venta.total }}</td>
+            <td>{{ venta.id_sucursal }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

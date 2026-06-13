@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Panel Auditor{% endblock %}
+{% block content %}
+{% from 'macros/card.html' import stat_card %}
+<div class="row">
+    {{ stat_card('Eventos críticos', eventos_criticos, 'bi bi-shield-exclamation', 'danger') }}
+    {{ stat_card('Intentos fallidos (hoy)', intentos_fallidos, 'bi bi-key', 'warning') }}
+    {{ stat_card('Sesiones activas', sesiones_activas, 'bi bi-person-check', 'success') }}
+    {{ stat_card('Alertas pendientes', alertas_pendientes, 'bi bi-bell', 'info') }}
+</div>
+<div class="row mt-4">
+    <div class="col-md-6"><div class="card"><div class="card-header">Últimos eventos</div><div class="card-body">...</div></div></div>
+    <div class="col-md-6"><div class="card"><div class="card-header">Top usuarios con más accesos</div><div class="card-body">...</div></div></div>
+</div>
+{% endblock %}

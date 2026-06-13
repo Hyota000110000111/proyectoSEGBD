@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Empleados{% endblock %}
+{% from 'macros/tabla.html' import render_table %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Empleados</h3>
+    <a href="{{ url_for('admin.nuevo_empleado') }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Nuevo</a>
+</div>
+{{ render_table(empleados, headers=['ID', 'Nombre', 'Usuario', 'Rol', 'Sucursal', 'Activo'], actions=true, edit_url='admin.editar_empleado', delete_url='admin.eliminar_empleado') }}
+{% include 'includes/modals.html' %}
+{% endblock %}

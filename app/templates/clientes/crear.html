@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Nuevo Cliente{% endblock %}
+{% from 'macros/formulario.html' import render_field %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">Registrar cliente</div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ render_field(form.nombre) }}
+            {{ render_field(form.cedula) }}
+            {{ render_field(form.telefono) }}
+            {{ render_field(form.direccion) }}
+            {% if current_user.rol == 'ADMINISTRADOR' %}
+                {{ render_field(form.sucursal_id) }}
+            {% endif %}
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
+            <a href="{{ url_for('gerente.listar_clientes') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

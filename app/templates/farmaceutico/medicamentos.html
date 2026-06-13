@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Medicamentos - Farmacéutico{% endblock %}
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('home') }}">Inicio</a></li>
+<li class="breadcrumb-item active">Medicamentos</li>
+{% endblock %}
+{% block content %}
+{% from 'macros/card.html' import stat_card %}
+<div class="row mb-3">
+    <div class="col-md-6">
+        <h3>Lista de medicamentos</h3>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Sucursal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for med in medicamentos %}
+                    <tr>
+                        <td>{{ med.id_medicamento }}</td>
+                        <td>{{ med.nombre }}</td>
+                        <td>${{ med.precio }}</td>
+                        <td>{{ med.stock }}</td>
+                        <td>{{ med.id_sucursal }}</td>
+                        <td>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

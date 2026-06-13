@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Panel Gerente{% endblock %}
+{% block breadcrumbs %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+{% block content %}
+{% from 'macros/card.html' import stat_card %}
+<div class="row">
+    {{ stat_card('Clientes', total_clientes, 'bi bi-people-fill', 'primary') }}
+    {{ stat_card('Medicamentos', total_medicamentos, 'bi bi-capsule', 'success') }}
+    {{ stat_card('Ventas (hoy)', ventas_hoy, 'bi bi-cart-check', 'info') }}
+    {{ stat_card('Alertas de stock', stock_bajo, 'bi bi-exclamation-triangle', 'warning') }}
+</div>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Ventas recientes</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for venta in ventas_recientes %}
+                    <li class="list-group-item">{{ venta.fecha.strftime('%d/%m/%Y') }} - {{ venta.cliente_nombre }}: ${{ venta.total }}</li>
+                    {% else %}
+                    <li class="list-group-item">No hay ventas recientes</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">Productos con bajo stock</div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for med in productos_stock_bajo %}
+                    <li class="list-group-item">{{ med.nombre }} - stock: {{ med.stock }}</li>
+                    {% else %}
+                    <li class="list-group-item">Sin alertas de stock</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

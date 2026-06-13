@@ -1,0 +1,87 @@
+<footer class="fc-footer" role="contentinfo">
+  <div class="container-fluid px-4 py-3">
+
+    <!-- ── Fila principal ── -->
+    <div class="row align-items-center gy-3">
+
+      <!-- Columna izquierda: brand + tagline -->
+      <div class="col-12 col-md-4">
+        <div class="fc-footer-brand">
+          <span class="fc-footer-brand-icon">
+            <i class="fas fa-shield-halved"></i>
+          </span>
+          <div>
+            <div class="fc-footer-name">
+              Farma<strong>Segura</strong>
+            </div>
+            <div class="fc-footer-tagline">
+              Gestión Farmacéutica con Seguridad de Datos
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna central: módulos del sistema -->
+      <div class="col-12 col-md-4 text-center d-none d-md-block">
+        <div class="fc-footer-modules">
+          <span class="fc-footer-module-item">
+            <i class="fas fa-lock fa-fw"></i> Seguridad BD
+          </span>
+          <span class="fc-footer-sep">·</span>
+          <span class="fc-footer-module-item">
+            <i class="fas fa-file-shield fa-fw"></i> Auditoría
+          </span>
+          <span class="fc-footer-sep">·</span>
+          <span class="fc-footer-module-item">
+            <i class="fas fa-users-gear fa-fw"></i> Control de Acceso
+          </span>
+        </div>
+      </div>
+
+      <!-- Columna derecha: estado del sistema -->
+      <div class="col-12 col-md-4 d-flex justify-content-md-end justify-content-center align-items-center gap-3">
+        <span class="fc-footer-security-badge">
+          <i class="fas fa-circle-check"></i> Sistema operativo
+        </span>
+        <span class="fc-footer-security-badge fc-badge-encrypted">
+          <i class="fas fa-lock"></i> Sesión cifrada
+        </span>
+      </div>
+
+    </div><!-- /row principal -->
+
+    <!-- ── Divisor ── -->
+    <hr class="fc-footer-divider">
+
+    <!-- ── Fila de copyright ── -->
+    <div class="row align-items-center">
+      <div class="col-12 col-md-6">
+        <p class="fc-footer-copy mb-0">
+          &copy; {{ now.year if now is defined else '2025' }}
+          <strong>FarmaSegura</strong> —
+          Proyecto Universitario · Seguridad de Bases de Datos
+        </p>
+      </div>
+
+      <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+        <span class="fc-footer-stack">
+          <span class="fc-stack-item" title="Flask">
+            <i class="fas fa-flask fa-fw"></i> Flask
+          </span>
+          <span class="fc-footer-sep">·</span>
+          <span class="fc-stack-item" title="MySQL">
+            <i class="fas fa-database fa-fw"></i> MySQL
+          </span>
+          <span class="fc-footer-sep">·</span>
+          <span class="fc-stack-item" title="Bootstrap 5">
+            <i class="fab fa-bootstrap fa-fw"></i> Bootstrap 5
+          </span>
+          <span class="fc-footer-sep">·</span>
+          <span class="fc-stack-item" title="Python">
+            <i class="fab fa-python fa-fw"></i> Python
+          </span>
+        </span>
+      </div>
+    </div><!-- /row copyright -->
+  </div><!-- /container-fluid -->
+</footer>

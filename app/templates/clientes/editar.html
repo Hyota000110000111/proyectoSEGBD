@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Editar Cliente{% endblock %}
+{% from 'macros/formulario.html' import render_field %}
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">Editar cliente: {{ cliente.nombre }}</div>
+    <div class="card-body">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ render_field(form.nombre) }}
+            {{ render_field(form.cedula) }}
+            {{ render_field(form.telefono) }}
+            {{ render_field(form.direccion) }}
+            {% if current_user.rol == 'ADMINISTRADOR' and form.sucursal_id %}
+                {{ render_field(form.sucursal_id) }}
+            {% else %}
+                <input type="hidden" name="sucursal_id" value="{{ current_user.id_sucursal }}">
+            {% endif %}
+            <button type="submit" class="btn btn-primary">Actualizar</button>
+            <a href="{{ url_for('gerente.listar_clientes') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

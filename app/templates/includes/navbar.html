@@ -1,0 +1,171 @@
+<nav class="navbar navbar-expand-lg fc-navbar" role="navigation" aria-label="Navegación principal">
+  <div class="container-fluid px-3">
+
+    <!-- ── Brand / Logo ── -->
+    <a class="navbar-brand fc-brand" href="{{ url_for('home') }}">
+      <span class="fc-brand-icon">
+        <i class="fas fa-shield-halved"></i>
+      </span>
+      <span class="fc-brand-text">
+        Farma<strong>Segura</strong>
+      </span>
+      <span class="fc-brand-badge">DB Secure</span>
+    </a>
+
+    <!-- ── Toggler móvil ── -->
+    <button class="navbar-toggler fc-toggler ms-auto me-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#fcNavbar"
+            aria-controls="fcNavbar"
+            aria-expanded="false"
+            aria-label="Abrir menú">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- ── Contenido colapsable ── -->
+    <div class="collapse navbar-collapse" id="fcNavbar">
+
+      <!-- Spacer izquierdo -->
+      <div class="me-auto"></div>
+
+      <!-- ── Acciones de la derecha ── -->
+      <ul class="navbar-nav align-items-center gap-1">
+
+        <!-- Indicador de conexión segura -->
+        <li class="nav-item d-none d-lg-flex align-items-center me-1">
+          <span class="fc-secure-indicator">
+            <span class="status-dot online"></span>
+            <span class="fc-secure-text">Sesión segura</span>
+          </span>
+        </li>
+
+        <!-- Separador visual -->
+        <li class="nav-item d-none d-lg-block">
+          <div class="fc-nav-divider"></div>
+        </li>
+
+        <!-- Toggle modo oscuro -->
+        <li class="nav-item">
+          <button id="theme-toggle"
+                  class="btn-theme-toggle"
+                  title="Cambiar tema"
+                  aria-label="Cambiar entre modo claro y oscuro">
+            <i id="theme-icon" class="fas fa-moon"></i>
+          </button>
+        </li>
+
+        <!-- Notificaciones (si aplica) -->
+        {% if current_user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <button class="btn-theme-toggle position-relative"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  title="Notificaciones"
+                  aria-label="Notificaciones">
+            <i class="fas fa-bell"></i>
+            {% if alertas_no_leidas is defined and alertas_no_leidas > 0 %}
+            <span class="fc-notif-badge">{{ alertas_no_leidas }}</span>
+            {% endif %}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end fc-dropdown fc-notif-menu">
+            <li>
+              <h6 class="dropdown-header fc-dropdown-header">
+                <i class="fas fa-bell me-1"></i> Notificaciones
+              </h6>
+            </li>
+            <li><hr class="dropdown-divider fc-divider"></li>
+            {% if alertas_recientes is defined and alertas_recientes %}
+              {% for alerta in alertas_recientes[:5] %}
+              <li>
+                <a class="dropdown-item fc-dropdown-item" href="{{ url_for('seguridad.alertas') }}">
+                  <i class="fas fa-exclamation-triangle me-2"></i> {{ alerta.descripcion }}
+                </a>
+              </li>
+              {% endfor %}
+            {% else %}
+            <li>
+              <span class="dropdown-item-text text-center py-3 fc-empty-notif">
+                <i class="fas fa-check-circle text-success d-block mb-1" style="font-size:1.4rem;"></i>
+                Sin alertas pendientes
+              </span>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- Perfil de usuario -->
+        {% if current_user.is_authenticated %}
+        <li class="nav-item dropdown">
+          <button class="fc-user-btn dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  id="userDropdown">
+            <!-- Avatar con iniciales -->
+            <span class="fc-avatar">
+              {{ (current_user.nombre[0] ~ current_user.nombre.split()[-1][0]) | upper if current_user.nombre else 'U' }}
+            </span>
+            <span class="fc-user-info d-none d-md-flex flex-column text-start">
+              <span class="fc-user-name">
+                {{ current_user.nombre if current_user.nombre else current_user.usuario }}
+              </span>
+              <span class="fc-user-role">
+                {{ current_user.rol | capitalize }}
+              </span>
+            </span>
+            <i class="fas fa-chevron-down fc-chevron d-none d-md-inline ms-1"></i>
+          </button>
+
+          <ul class="dropdown-menu dropdown-menu-end fc-dropdown" aria-labelledby="userDropdown">
+            <li>
+              <h6 class="dropdown-header fc-dropdown-header">
+                <i class="fas fa-user-circle me-1"></i>
+                {{ current_user.nombre if current_user.nombre else current_user.usuario }}
+              </h6>
+            </li>
+            <li>
+              <span class="fc-role-badge-menu">
+                <i class="fas fa-id-badge me-1"></i>
+                {{ current_user.rol | capitalize }}
+              </span>
+            </li>
+            <li><hr class="dropdown-divider fc-divider"></li>
+
+            {% if current_user.rol == 'ADMINISTRADOR' %}
+            <li>
+              <a class="dropdown-item fc-dropdown-item" href="{{ url_for('admin.listar_empleados') }}">
+                <i class="fas fa-gauge-high fa-fw"></i> Panel de administración
+              </a>
+            </li>
+            {% endif %}
+
+            <li>
+              <a class="dropdown-item fc-dropdown-item" href="{{ url_for('auth.cambiar_password') }}">
+                <i class="fas fa-key fa-fw"></i> Cambiar contraseña
+              </a>
+            </li>
+
+            <li><hr class="dropdown-divider fc-divider"></li>
+
+            <li>
+              <a class="dropdown-item fc-dropdown-item fc-logout" href="{{ url_for('auth.logout') }}">
+                <i class="fas fa-right-from-bracket fa-fw"></i> Cerrar sesión
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        {% else %}
+        <!-- Sin sesión iniciada -->
+        <li class="nav-item">
+          <a class="nav-link fc-nav-login" href="{{ url_for('auth.login') }}">
+            <i class="fas fa-right-to-bracket me-1"></i> Iniciar sesión
+          </a>
+        </li>
+        {% endif %}
+
+      </ul><!-- /navbar-nav -->
+    </div><!-- /navbar-collapse -->
+  </div><!-- /container-fluid -->
+</nav>

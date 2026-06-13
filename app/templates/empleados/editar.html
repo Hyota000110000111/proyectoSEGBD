@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if empleado else 'Crear' }} Empleado{% endblock %}
+{% from 'macros/formulario.html' import render_field %}
+{% block content %}
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {{ render_field(form.nombre) }}
+            {{ render_field(form.usuario) }}
+            {{ render_field(form.password) if not empleado else '' }}
+            {{ render_field(form.rol) }}
+            {{ render_field(form.id_sucursal) }}
+            {{ render_field(form.activo) }}
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{{ url_for('admin.listar_empleados') }}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </div>
+</form>
+{% endblock %}

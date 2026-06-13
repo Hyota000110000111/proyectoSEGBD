@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Empleado{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.listar_empleados') }}">Empleados</a></li>
+<li class="breadcrumb-item active" aria-current="page">Nuevo</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="bi bi-person-plus"></i> Registrar nuevo empleado</h4>
+    </div>
+    <div class="card-body">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre completo</label>
+                <input type="text" name="nombre" id="nombre" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Usuario</label>
+                <input type="text" name="usuario" id="usuario" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" name="password" id="password" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="rol" class="form-label">Rol</label>
+                <select name="rol" id="rol" class="form-select" required>
+                    <option value="FARMACEUTICO">Farmacéutico</option>
+                    <option value="GERENTE">Gerente</option>
+                    <option value="ADMINISTRADOR">Administrador</option>
+                    <option value="AUDITOR">Auditor</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="id_sucursal" class="form-label">Sucursal</label>
+                <select name="id_sucursal" id="id_sucursal" class="form-select">
+                    <option value="0">-- Sin sucursal (solo para AUDITOR) --</option>
+                    {% for sucursal in sucursales %}
+                        <option value="{{ sucursal.id_sucursal }}">{{ sucursal.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">Si el rol es Auditor, puede dejar sin sucursal.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar empleado</button>
+            <a href="{{ url_for('admin.listar_empleados') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

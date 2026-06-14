@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_login import login_required, current_user
-from sqlalchemy import text
+from sqlalchemy import text, func
+from datetime import datetime, timedelta
 from . import farmaceutico_bp
 from ...utils.decorators import roles_required
 from ...utils.security import verificar_permiso_escritura
@@ -17,6 +18,7 @@ from ...models.operativa.cliente import Cliente
 from ...models.operativa.venta import Venta
 from ...models.operativa.detalle_venta import DetalleVenta
 from ...models.operativa.detalle_venta_public import DetalleVentaPublic
+from ...models.operativa.sucursal import Sucursal
 
 # ====================================================
 # LISTAR MEDICAMENTOS
@@ -118,7 +120,7 @@ def listar_ventas():
     return render_template('farmaceutico/ventas.html', ventas=ventas)
 
 # ====================================================
-# DETALLE DE VENTA (nueva ruta agregada)
+# DETALLE DE VENTA
 # ====================================================
 @farmaceutico_bp.route('/ventas/<int:id>')
 @login_required
@@ -127,8 +129,93 @@ def detalle_venta(id):
     venta = VentaPublic.query.get_or_404(id)
     detalles = DetalleVentaPublic.query.filter_by(id_venta=id).all()
     return render_template('farmaceutico/detalle_venta.html', venta=venta, detalles=detalles)
+
+# ====================================================
+# DASHBOARD FARMACEUTICO (con estadísticas reales)
+# ====================================================
 @farmaceutico_bp.route('/dashboard')
 @login_required
-@roles_required('FARMACEUTICO')
+@roles_required('FARMACEUTICO', 'GERENTE', 'ADMINISTRADOR')
 def dashboard():
-    return render_template('dashboard_farmaceutico.html')
+    # ====================================================
+    # 0. Estadísticas básicas para las tarjetas
+    # ====================================================
+    hoy = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    ventas_hoy = Venta.query.filter(
+        Venta.id_sucursal == current_user.id_sucursal,
+        Venta.fecha >= hoy
+    ).count()
+    
+    total_meds = Medicamento.query.filter_by(id_sucursal=current_user.id_sucursal).count()
+    stock_bajo = Medicamento.query.filter(
+        Medicamento.id_sucursal == current_user.id_sucursal,
+        Medicamento.stock <= 5
+    ).count()
+    
+    # ====================================================
+    # 1. Últimas ventas de la sucursal del farmacéutico
+    # ====================================================
+    ultimas_ventas = VentaPublic.query.filter_by(id_sucursal=current_user.id_sucursal)\
+                                      .order_by(VentaPublic.fecha.desc())\
+                                      .limit(5).all()
+    
+    # ====================================================
+    # 2. Top 5 medicamentos más vendidos en su sucursal
+    # ====================================================
+    top_medicamentos = db.session.query(
+        Medicamento.nombre,
+        func.sum(DetalleVenta.cantidad).label('total_vendido')
+    ).join(DetalleVenta, Medicamento.id_medicamento == DetalleVenta.id_medicamento)\
+     .join(Venta, DetalleVenta.id_venta == Venta.id_venta)\
+     .filter(Venta.id_sucursal == current_user.id_sucursal)\
+     .group_by(Medicamento.id_medicamento)\
+     .order_by(func.sum(DetalleVenta.cantidad).desc())\
+     .limit(5).all()
+    
+    top_nombres = [m[0] for m in top_medicamentos]
+    top_cantidades = [int(m[1]) for m in top_medicamentos]
+    
+    # ====================================================
+    # 3. Ventas por sucursal (solo la suya, pero igual se pasa como lista)
+    # ====================================================
+    sucursal_nombre = Sucursal.query.get(current_user.id_sucursal).nombre
+    sucursales_nombres = [sucursal_nombre]
+    ventas_por_sucursal = [Venta.query.filter_by(id_sucursal=current_user.id_sucursal).count()]
+    
+    # ====================================================
+    # 4. Tendencia de ventas últimos 6 meses (solo su sucursal)
+    # ====================================================
+    now = datetime.now()
+    meses_labels = []
+    ventas_por_mes = []
+    
+    for i in range(5, -1, -1):
+        fecha_inicio = datetime(now.year, now.month, 1) - timedelta(days=i*30)
+        fecha_fin = fecha_inicio + timedelta(days=32)
+        fecha_fin = datetime(fecha_fin.year, fecha_fin.month, 1)
+        
+        total = Venta.query.filter(
+            Venta.fecha >= fecha_inicio,
+            Venta.fecha < fecha_fin,
+            Venta.id_sucursal == current_user.id_sucursal
+        ).count()
+        meses_labels.append(fecha_inicio.strftime('%b %Y'))
+        ventas_por_mes.append(total)
+    
+    # ====================================================
+    # 5. Total de clientes en su sucursal
+    # ====================================================
+    total_clientes_sucursal = ClientePublic.query.filter_by(sucursal_registro_id=current_user.id_sucursal).count()
+    
+    return render_template('dashboard_farmaceutico.html',
+                           ventas_hoy=ventas_hoy,
+                           total_meds=total_meds,
+                           stock_bajo=stock_bajo,
+                           ultimas_ventas=ultimas_ventas,
+                           top_medicamentos_nombres=top_nombres,
+                           top_medicamentos_cantidades=top_cantidades,
+                           sucursales_nombres=sucursales_nombres,
+                           ventas_por_sucursal=ventas_por_sucursal,
+                           meses_labels=meses_labels,
+                           ventas_por_mes=ventas_por_mes,
+                           total_clientes_sucursal=total_clientes_sucursal)

@@ -1,44 +1,208 @@
 {% extends "base.html" %}
+
 {% block title %}Panel Gerente{% endblock %}
+
 {% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('home') }}">Inicio</a></li>
 <li class="breadcrumb-item active">Dashboard</li>
 {% endblock %}
+
 {% block content %}
-{% from 'macros/card.html' import stat_card %}
-<div class="row">
-    {{ stat_card('Clientes', total_clientes, 'bi bi-people-fill', 'primary') }}
-    {{ stat_card('Medicamentos', total_medicamentos, 'bi bi-capsule', 'success') }}
-    {{ stat_card('Ventas (hoy)', ventas_hoy, 'bi bi-cart-check', 'info') }}
-    {{ stat_card('Alertas de stock', stock_bajo, 'bi bi-exclamation-triangle', 'warning') }}
-</div>
-<div class="row mt-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">Ventas recientes</div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    {% for venta in ventas_recientes %}
-                    <li class="list-group-item">{{ venta.fecha.strftime('%d/%m/%Y') }} - {{ venta.cliente_nombre }}: ${{ venta.total }}</li>
-                    {% else %}
-                    <li class="list-group-item">No hay ventas recientes</li>
-                    {% endfor %}
-                </ul>
+<div class="container-fluid">
+    <!-- Bienvenida -->
+    <div class="fc-welcome-banner mb-4">
+        <h4><i class="fas fa-chart-line me-2"></i>Panel de Control - Gerencia</h4>
+        <p>Bienvenido, {{ current_user.nombre }}. Resumen de tu sucursal: <strong>{{ sucursal_nombre if sucursal_nombre else 'Mi sucursal' }}</strong></p>
+    </div>
+
+    <!-- Tarjetas de estadísticas -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Clientes registrados</div>
+                        <div class="stat-number">{{ total_clientes|default(0) }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-people-fill fa-2x"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-success">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Medicamentos</div>
+                        <div class="stat-number">{{ total_medicamentos|default(0) }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-capsule fa-2x"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-info">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Ventas de hoy</div>
+                        <div class="stat-number">{{ ventas_hoy|default(0) }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-cart-check fa-2x"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Stock bajo (≤5)</div>
+                        <div class="stat-number">{{ stock_bajo|default(0) }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="bi bi-exclamation-triangle fa-2x"></i></div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">Productos con bajo stock</div>
-            <div class="card-body">
-                <ul class="list-group list-group-flush">
-                    {% for med in productos_stock_bajo %}
-                    <li class="list-group-item">{{ med.nombre }} - stock: {{ med.stock }}</li>
-                    {% else %}
-                    <li class="list-group-item">Sin alertas de stock</li>
-                    {% endfor %}
-                </ul>
+
+    <!-- Gráficos (requiere Chart.js) -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-chart-line me-2"></i> Ventas por mes (últimos 6 meses)
+                </div>
+                <div class="card-body">
+                    <canvas id="ventasPorMesChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-chart-pie me-2"></i> Top 5 medicamentos más vendidos
+                </div>
+                <div class="card-body">
+                    <canvas id="topMedicamentosChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventas recientes y alertas de stock -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-clock-history me-2"></i> Últimas ventas
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for venta in ventas_recientes %}
+                                <tr>
+                                    <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') if venta.fecha else 'N/A' }}</td>
+                                    <td>{{ venta.cliente_nombre if venta.cliente_nombre else 'N/A' }}</td>
+                                    <td>${{ "%.2f"|format(venta.total) }}</td>
+                                    <td>
+                                        <a href="{{ url_for('gerente.detalle_venta', id=venta.id_venta) }}" class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <td><td colspan="4" class="text-center">No hay ventas recientes en tu sucursal.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle me-2"></i> Productos con stock bajo (≤5)
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for med in productos_stock_bajo %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ med.nombre }}
+                            <span class="badge bg-danger rounded-pill">Stock: {{ med.stock }}</span>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted">No hay productos con stock bajo en tu sucursal.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gráfico de ventas por mes (línea)
+        const meses = {{ meses_labels|tojson }};
+        const ventasMes = {{ ventas_por_mes|tojson }};
+        if (meses && ventasMes && meses.length > 0) {
+            const ctxLine = document.getElementById('ventasPorMesChart').getContext('2d');
+            new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: meses,
+                    datasets: [{
+                        label: 'Número de ventas',
+                        data: ventasMes,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (ctx) => `${ctx.raw} ventas` } } }
+                }
+            });
+        }
+
+        // Gráfico de top medicamentos (pastel)
+        const topNombres = {{ top_medicamentos_nombres|tojson }};
+        const topCantidades = {{ top_medicamentos_cantidades|tojson }};
+        if (topNombres && topCantidades && topNombres.length > 0) {
+            const ctxPie = document.getElementById('topMedicamentosChart').getContext('2d');
+            new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: topNombres,
+                    datasets: [{
+                        data: topCantidades,
+                        backgroundColor: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} unidades` } } }
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

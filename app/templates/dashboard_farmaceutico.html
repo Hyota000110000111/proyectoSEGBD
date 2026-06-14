@@ -1,16 +1,131 @@
 {% extends "base.html" %}
+
 {% block title %}Panel Farmacéutico{% endblock %}
+
 {% block content %}
 {% from 'macros/card.html' import stat_card %}
-<div class="row">
-    {{ stat_card('Ventas hoy', ventas_hoy, 'bi bi-cart', 'success') }}
-    {{ stat_card('Medicamentos totales', total_meds, 'bi bi-capsule', 'info') }}
-    {{ stat_card('Stock bajo', stock_bajo, 'bi bi-exclamation-triangle', 'warning') }}
+
+<div class="row mb-4">
+    {{ stat_card('Ventas hoy', ventas_hoy|default(0), 'bi bi-cart', 'success') }}
+    {{ stat_card('Medicamentos totales', total_meds|default(0), 'bi bi-capsule', 'info') }}
+    {{ stat_card('Stock bajo', stock_bajo|default(0), 'bi bi-exclamation-triangle', 'warning') }}
     <div class="col-md-3 mb-3">
-        <div class="card h-100"><div class="card-body text-center"><a href="{{ url_for('farmaceutico.nueva_venta_form') }}" class="btn btn-primary w-100"><i class="bi bi-plus-circle"></i> Nueva venta</a></div></div>
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <a href="{{ url_for('farmaceutico.nueva_venta_form') }}" class="btn btn-primary w-100">
+                    <i class="bi bi-plus-circle"></i> Nueva venta
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+
 <div class="row mt-3">
-    <div class="col-12"><div class="card"><div class="card-header">Últimas ventas</div><div class="card-body">...</div></div></div>
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-clock-history me-2"></i> Últimas ventas
+            </div>
+            <div class="card-body">
+                {% if ultimas_ventas %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venta in ultimas_ventas %}
+                            <tr>
+                                <td>{{ venta.id_venta }}</td>
+                                <td>{{ venta.fecha.strftime('%d/%m/%Y %H:%M') if venta.fecha else 'N/A' }}</td>
+                                <td>{{ venta.cliente_nombre if venta.cliente_nombre else 'N/A' }}</td>
+                                <td>${{ "%.2f"|format(venta.total) }}</td>
+                                <td>
+                                    <a href="{{ url_for('farmaceutico.detalle_venta', id=venta.id_venta) }}" class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No hay ventas recientes en tu sucursal.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Gráficos opcionales -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <i class="bi bi-bar-chart-steps me-2"></i> Top medicamentos más vendidos
+            </div>
+            <div class="card-body">
+                <canvas id="topMedicamentosChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <i class="bi bi-graph-up me-2"></i> Tendencia de ventas (últimos 6 meses)
+            </div>
+            <div class="card-body">
+                <canvas id="tendenciaVentasChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    {% if top_medicamentos_nombres and top_medicamentos_cantidades %}
+    const ctxTop = document.getElementById('topMedicamentosChart').getContext('2d');
+    new Chart(ctxTop, {
+        type: 'bar',
+        data: {
+            labels: {{ top_medicamentos_nombres|tojson }},
+            datasets: [{
+                label: 'Unidades vendidas',
+                data: {{ top_medicamentos_cantidades|tojson }},
+                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                borderColor: '#28a745',
+                borderWidth: 1
+            }]
+        }
+    });
+    {% endif %}
+
+    {% if meses_labels and ventas_por_mes %}
+    const ctxTrend = document.getElementById('tendenciaVentasChart').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: {{ meses_labels|tojson }},
+            datasets: [{
+                label: 'Número de ventas',
+                data: {{ ventas_por_mes|tojson }},
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
+
 {% endblock %}

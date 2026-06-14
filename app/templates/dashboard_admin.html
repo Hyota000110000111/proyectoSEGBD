@@ -15,47 +15,69 @@
         <p>Bienvenido, {{ current_user.nombre }}. Aquí tienes un resumen de la actividad del sistema.</p>
     </div>
 
-    <!-- Tarjetas de estadísticas -->
+    <!-- Tarjetas de estadísticas (6 tarjetas) -->
     <div class="row mb-4 g-3">
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-2">
             <div class="stat-card">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="stat-label">Total Sucursales</div>
-                        <div class="stat-number">{{ total_sucursales }}</div>
+                        <div class="stat-label">Sucursales</div>
+                        <div class="stat-number">{{ total_sucursales|default(0) }}</div>
                     </div>
                     <div class="stat-icon"><i class="fas fa-building fa-2x"></i></div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-2">
             <div class="stat-card stat-info">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="stat-label">Total Empleados</div>
-                        <div class="stat-number">{{ total_empleados }}</div>
+                        <div class="stat-label">Empleados</div>
+                        <div class="stat-number">{{ total_empleados|default(0) }}</div>
                     </div>
                     <div class="stat-icon"><i class="fas fa-users fa-2x"></i></div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4 col-lg-2">
             <div class="stat-card stat-success">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="stat-label">Ventas del Mes</div>
-                        <div class="stat-number">{{ ventas_mes }}</div>
+                        <div class="stat-label">Clientes</div>
+                        <div class="stat-number">{{ total_clientes|default(0) }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-user-friends fa-2x"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="stat-card stat-warning">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Medicamentos</div>
+                        <div class="stat-number">{{ total_medicamentos|default(0) }}</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-capsules fa-2x"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="stat-card stat-primary">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="stat-label">Ventas (mes)</div>
+                        <div class="stat-number">{{ ventas_mes|default(0) }}</div>
                     </div>
                     <div class="stat-icon"><i class="fas fa-cart-shopping fa-2x"></i></div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="stat-card stat-warning">
+        <div class="col-md-4 col-lg-2">
+            <div class="stat-card stat-danger">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <div class="stat-label">Ingresos del Mes</div>
-                        <div class="stat-number">${{ "%.2f"|format(ingresos_mes) }}</div>
+                        <div class="stat-label">Ingresos (mes)</div>
+                        <div class="stat-number">${{ "%.2f"|format(ingresos_mes|default(0)) }}</div>
                     </div>
                     <div class="stat-icon"><i class="fas fa-dollar-sign fa-2x"></i></div>
                 </div>
@@ -77,11 +99,11 @@
             </div>
         </div>
 
-        <!-- Gráfica 2: Medicamentos más vendidos -->
+        <!-- Gráfica 2: Top medicamentos más vendidos -->
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
-                    <i class="fas fa-chart-pie me-2"></i> Top Medicamentos más Vendidos
+                    <i class="fas fa-chart-pie me-2"></i> Top 5 Medicamentos más Vendidos
                 </div>
                 <div class="card-body">
                     <canvas id="topMedicamentosChart" height="250"></canvas>
@@ -89,11 +111,11 @@
             </div>
         </div>
 
-        <!-- Gráfica 3: Tendencia de ventas (últimos 6 meses) -->
+        <!-- Gráfica 3: Tendencia de ventas -->
         <div class="col-md-12">
             <div class="card shadow-sm">
                 <div class="card-header bg-info text-white">
-                    <i class="fas fa-chart-line me-2"></i> Tendencia de Ventas (Últimos 6 Meses)
+                    <i class="fas fa-chart-line me-2"></i> Tendencia de Ventas (últimos 6 meses)
                 </div>
                 <div class="card-body">
                     <canvas id="tendenciaVentasChart" height="200"></canvas>
@@ -105,80 +127,87 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // Gráfica 1: Ventas por sucursal (barras)
-    const ctx1 = document.getElementById('ventasPorSucursalChart').getContext('2d');
-    new Chart(ctx1, {
-        type: 'bar',
-        data: {
-            labels: {{ sucursales_nombres|tojson }},
-            datasets: [{
-                label: 'Ventas (unidades)',
-                data: {{ ventas_por_sucursal|tojson }},
-                backgroundColor: 'rgba(52, 152, 219, 0.7)',
-                borderColor: 'rgba(52, 152, 219, 1)',
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { callbacks: { label: (ctx) => `${ctx.raw} ventas` } }
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Ventas por sucursal (barras)
+        const ctxBar = document.getElementById('ventasPorSucursalChart')?.getContext('2d');
+        if (ctxBar && {{ sucursales_nombres|tojson }} && {{ ventas_por_sucursal|tojson }}) {
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: {{ sucursales_nombres|tojson }},
+                    datasets: [{
+                        label: 'Número de ventas',
+                        data: {{ ventas_por_sucursal|tojson }},
+                        backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                        borderColor: '#2980b9',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw} ventas` } }
+                    }
+                }
+            });
         }
-    });
 
-    // Gráfica 2: Top medicamentos más vendidos (pastel)
-    const ctx2 = document.getElementById('topMedicamentosChart').getContext('2d');
-    new Chart(ctx2, {
-        type: 'pie',
-        data: {
-            labels: {{ top_medicamentos_nombres|tojson }},
-            datasets: [{
-                data: {{ top_medicamentos_cantidades|tojson }},
-                backgroundColor: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'right' },
-                tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} unidades` } }
-            }
+        // 2. Top medicamentos (pastel)
+        const ctxPie = document.getElementById('topMedicamentosChart')?.getContext('2d');
+        if (ctxPie && {{ top_medicamentos_nombres|tojson }} && {{ top_medicamentos_cantidades|tojson }}) {
+            new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: {{ top_medicamentos_nombres|tojson }},
+                    datasets: [{
+                        data: {{ top_medicamentos_cantidades|tojson }},
+                        backgroundColor: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw} unidades` } }
+                    }
+                }
+            });
         }
-    });
 
-    // Gráfica 3: Tendencia de ventas (línea)
-    const ctx3 = document.getElementById('tendenciaVentasChart').getContext('2d');
-    new Chart(ctx3, {
-        type: 'line',
-        data: {
-            labels: {{ meses_labels|tojson }},
-            datasets: [{
-                label: 'Ventas',
-                data: {{ ventas_por_mes|tojson }},
-                borderColor: 'rgba(52, 152, 219, 1)',
-                backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                tension: 0.3,
-                fill: true,
-                pointBackgroundColor: '#3498db',
-                pointBorderColor: '#fff',
-                pointRadius: 5,
-                pointHoverRadius: 7
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { position: 'top' },
-                tooltip: { callbacks: { label: (ctx) => `${ctx.raw} ventas` } }
-            }
+        // 3. Tendencia de ventas (línea)
+        const ctxLine = document.getElementById('tendenciaVentasChart')?.getContext('2d');
+        if (ctxLine && {{ meses_labels|tojson }} && {{ ventas_por_mes|tojson }}) {
+            new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: {{ meses_labels|tojson }},
+                    datasets: [{
+                        label: 'Ventas',
+                        data: {{ ventas_por_mes|tojson }},
+                        borderColor: '#17a2b8',
+                        backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#17a2b8',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw} ventas` } }
+                    }
+                }
+            });
         }
     });
 </script>

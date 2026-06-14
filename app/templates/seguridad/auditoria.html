@@ -1,26 +1,106 @@
 {% extends "base.html" %}
-{% block title %}Auditoría{% endblock %}
+
+{% block title %}Auditoría - FarmaSegura{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('home') }}">Inicio</a></li>
+<li class="breadcrumb-item active">Auditoría</li>
+{% endblock %}
+
 {% block content %}
-<h3>Registro de auditoría</h3>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr><th>Fecha</th><th>Usuario</th><th>Tabla</th><th>Operación</th><th>Valores anteriores</th><th>Valores nuevos</th></tr>
-        </thead>
-        <tbody>
-            {% for log in logs %}
-            <tr>
-                <td>{{ log.fecha_hora }}</td>
-                <td>{{ log.usuario_real }}</td>
-                <td>{{ log.tabla_afectada }}</td>
-                <td>{{ log.operacion }}</td>
-                <td>{{ log.valores_anteriores | tojson if log.valores_anteriores else '' }}</td>
-                <td>{{ log.valores_nuevos | tojson if log.valores_nuevos else '' }}</td>
-            </tr>
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i> Registro de auditoría</h5>
+            <a href="{{ url_for('seguridad.exportar_auditoria_pdf') }}" class="btn btn-sm btn-light" target="_blank">
+                <i class="bi bi-file-pdf me-1"></i> Exportar a PDF
+            </a>
+        </div>
+        <div class="card-body">
+            {% if logs %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha/Hora</th>
+                                <th>Usuario</th>
+                                <th>Tabla</th>
+                                <th>Operación</th>
+                                <th>Valores anteriores</th>
+                                <th>Valores nuevos</th>
+                                <th>IP Origen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ log.id_log }}</td>
+                                <td>{{ log.fecha_hora.strftime('%d/%m/%Y %H:%M:%S') if log.fecha_hora else 'N/A' }}</td>
+                                <td>{{ log.usuario_real }}</td>
+                                <td>{{ log.tabla_afectada }}</td>
+                                <td>
+                                    <span class="badge bg-{{ 'success' if log.operacion == 'INSERT' else 'warning' if log.operacion == 'UPDATE' else 'danger' }}">
+                                        {{ log.operacion }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#old-{{ log.id_log }}">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </button>
+                                    <div class="collapse mt-1" id="old-{{ log.id_log }}">
+                                        <pre class="small mb-0">{{ log.valores_anteriores | tojson(indent=2) if log.valores_anteriores else '—' }}</pre>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#new-{{ log.id_log }}">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </button>
+                                    <div class="collapse mt-1" id="new-{{ log.id_log }}">
+                                        <pre class="small mb-0">{{ log.valores_nuevos | tojson(indent=2) if log.valores_nuevos else '—' }}</pre>
+                                    </div>
+                                </td>
+                                <td>{{ log.ip_origen or '—' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {# Paginación - si tu backend usa pagination #}
+                {% if pagination %}
+                <nav aria-label="Paginación de auditoría">
+                    <ul class="pagination justify-content-center mt-3">
+                        {% if pagination.has_prev %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('seguridad.auditoria', page=pagination.prev_num) }}">Anterior</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                        {% endif %}
+
+                        {% for p in pagination.iter_pages() %}
+                            {% if p %}
+                                <li class="page-item {{ 'active' if p == pagination.page else '' }}">
+                                    <a class="page-link" href="{{ url_for('seguridad.auditoria', page=p) }}">{{ p }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if pagination.has_next %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('seguridad.auditoria', page=pagination.next_num) }}">Siguiente</a></li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
             {% else %}
-            <tr><td colspan="6">No hay registros de auditoría aún.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                <div class="alert alert-info text-center mb-0">
+                    <i class="bi bi-info-circle me-2"></i> No hay registros de auditoría aún.
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

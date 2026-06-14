@@ -61,25 +61,55 @@ def nuevo_cliente():
 @roles_required('ADMINISTRADOR', 'GERENTE')
 def editar_cliente(id):
     cliente = Cliente.query.get_or_404(id)
+    # Verificar permiso de escritura según sucursal
     verificar_permiso_escritura(cliente, columna_sucursal='sucursal_registro_id')
+    
+    # Si es GET, mostrar formulario
     form = ClienteForm(obj=cliente)
     if current_user.rol == 'ADMINISTRADOR':
         form.sucursal_id.choices = [(s.id_sucursal, s.nombre) for s in Sucursal.query.all()]
     else:
         form.sucursal_id.choices = [(current_user.id_sucursal, Sucursal.query.get(current_user.id_sucursal).nombre)]
         form.sucursal_id.data = current_user.id_sucursal
+    
     if form.validate_on_submit():
+        # Guardar valores antiguos para auditoría
+        valores_anteriores = {
+            'id_cliente': cliente.id_cliente,
+            'nombre': cliente.nombre,
+            'cedula': cliente.cedula,
+            'telefono': cliente.telefono,
+            'direccion': cliente.direccion,
+            'sucursal_registro_id': cliente.sucursal_registro_id
+        }
+        
+        # Modificar el cliente
         cliente.nombre = form.nombre.data
         cliente.cedula = form.cedula.data
         cliente.telefono = form.telefono.data
         cliente.direccion = form.direccion.data
         if current_user.rol == 'ADMINISTRADOR' and hasattr(form, 'sucursal_id'):
             cliente.sucursal_registro_id = form.sucursal_id.data
+        
+        # Registrar auditoría (aún no se hace commit)
+        registrar_auditoria(
+            tabla='clientes',
+            operacion='UPDATE',
+            valores_anteriores=valores_anteriores,
+            valores_nuevos={
+                'id_cliente': cliente.id_cliente,
+                'nombre': cliente.nombre,
+                'cedula': cliente.cedula,
+                'telefono': cliente.telefono,
+                'direccion': cliente.direccion,
+                'sucursal_registro_id': cliente.sucursal_registro_id
+            }
+        )
         db.session.commit()
         flash('Cliente actualizado correctamente', 'success')
         return redirect(url_for('gerente.listar_clientes'))
+    
     return render_template('clientes/editar.html', form=form, cliente=cliente)
-
 @gerente_bp.route('/clientes/<int:id>/eliminar', methods=['POST'])
 @login_required
 @roles_required('ADMINISTRADOR', 'GERENTE')

@@ -1,97 +1,32 @@
-<aside class="sidebar" role="navigation" aria-label="Menú lateral">
-  <ul class="nav flex-column">
-    <li class="nav-item">
-      <a class="nav-link {{ 'active' if request.endpoint == 'home' else '' }}" href="{{ url_for('home') }}">
-        <i class="bi bi-speedometer2 me-2"></i> panel de control  
-      </a>
-    </li>
+<aside class="sidebar">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('home') }}">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
 
-    {# Usuario autenticado #}
-    {% if current_user.is_authenticated %}
-      {# ADMINISTRADOR #}
-      {% if current_user.rol == 'ADMINISTRADOR' %}
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'admin.listar_empleados' else '' }}" href="{{ url_for('admin.listar_empleados') }}">
-            <i class="bi bi-people me-2"></i> Empleados
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'admin.listar_sucursales' else '' }}" href="{{ url_for('admin.listar_sucursales') }}">
-            <i class="bi bi-building me-2"></i> Sucursales
-          </a>
-        </li>
-      {% endif %}
+        {% if current_user.is_authenticated %}
+            {% if current_user.rol == 'ADMINISTRADOR' %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.listar_empleados') }}"><i class="bi bi-people me-2"></i> Empleados</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.listar_sucursales') }}"><i class="bi bi-building me-2"></i> Sucursales</a></li>
+            {% endif %}
 
-      {# GERENTE (y ADMINISTRADOR también ve Clientes, Medicamentos, Ventas) #}
-      {% if current_user.rol in ['ADMINISTRADOR', 'GERENTE'] %}
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'gerente.listar_clientes' else '' }}" href="{{ url_for('gerente.listar_clientes') }}">
-            <i class="bi bi-person-badge me-2"></i> Clientes
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'gerente.listar_medicamentos' else '' }}" href="{{ url_for('gerente.listar_medicamentos') }}">
-            <i class="bi bi-capsule me-2"></i> Medicamentos
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'gerente.listar_ventas' else '' }}" href="{{ url_for('gerente.listar_ventas') }}">
-            <i class="bi bi-cart-check me-2"></i> Ventas
-          </a>
-        </li>
-      {% endif %}
+            {% if current_user.rol in ['ADMINISTRADOR', 'GERENTE'] %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('gerente.listar_clientes') }}"><i class="bi bi-person-badge me-2"></i> Clientes</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('gerente.listar_medicamentos') }}"><i class="bi bi-capsule me-2"></i> Medicamentos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('gerente.listar_ventas') }}"><i class="bi bi-cart-check me-2"></i> Ventas</a></li>
+            {% endif %}
 
-      {# FARMACEUTICO #}
-      {% if current_user.rol == 'FARMACEUTICO' %}
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'farmaceutico.listar_medicamentos' else '' }}" href="{{ url_for('farmaceutico.listar_medicamentos') }}">
-            <i class="bi bi-capsule me-2"></i> Medicamentos
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'farmaceutico.nueva_venta_form' else '' }}" href="{{ url_for('farmaceutico.nueva_venta_form') }}">
-            <i class="bi bi-plus-circle me-2"></i> Nueva Venta
-          </a>
-        </li>
-      {% endif %}
-
-      {# AUDITOR #}
-      {% if current_user.rol in ['ADMINISTRADOR', 'AUDITOR'] %}
-        <li class="nav-item"><hr class="dropdown-divider bg-secondary my-2"></li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'seguridad.intentos_login' else '' }}" href="{{ url_for('seguridad.intentos_login') }}">
-            <i class="bi bi-shield-lock me-2"></i> Intentos Login
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'seguridad.auditoria' else '' }}" href="{{ url_for('seguridad.auditoria') }}">
-            <i class="bi bi-journal-text me-2"></i> Auditoría
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'seguridad.eventos' else '' }}" href="{{ url_for('seguridad.eventos') }}">
-            <i class="bi bi-exclamation-triangle me-2"></i> Eventos
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'seguridad.alertas' else '' }}" href="{{ url_for('seguridad.alertas') }}">
-            <i class="bi bi-bell me-2"></i> Alertas
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {{ 'active' if request.endpoint == 'seguridad.sesiones_activas' else '' }}" href="{{ url_for('seguridad.sesiones_activas') }}">
-            <i class="bi bi-wifi me-2"></i> Sesiones activas
-          </a>
-        </li>
-      {% endif %}
-
-    {% else %}
-      {# Usuario no autenticado #}
-      <li class="nav-item">
-        <a class="nav-link" href="{{ url_for('auth.login') }}">
-          <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión
-        </a>
-      </li>
-    {% endif %}
-  </ul>
+            {% if current_user.rol in ['ADMINISTRADOR', 'AUDITOR'] %}
+                <li class="nav-item"><hr class="dropdown-divider bg-secondary my-2"></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('seguridad.auditoria') }}"><i class="bi bi-journal-text me-2"></i> Auditoría</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('seguridad.eventos') }}"><i class="bi bi-exclamation-triangle me-2"></i> Eventos</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('seguridad.alertas') }}"><i class="bi bi-bell me-2"></i> Alertas</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('seguridad.sesiones_activas') }}"><i class="bi bi-wifi me-2"></i> Sesiones activas</a></li>
+            {% endif %}
+        {% else %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}"><i class="bi bi-box-arrow-in-right me-2"></i> Iniciar sesión</a></li>
+        {% endif %}
+    </ul>
 </aside>
